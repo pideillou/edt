@@ -1,5 +1,6 @@
 import { parseIcs } from '../utils/icsParser.js';
 import { GROUPS } from '../models/ScheduleModel.js';
+import { makeBaseline, diffEvents } from '../utils/changes.js';
 
 const AUTO_REFRESH_MS = 30 * 60 * 1000;
 const STALE_MS = 10 * 60 * 1000;
@@ -14,6 +15,7 @@ export default class ScheduleController {
   #storage;
   #lastFetch = 0;
   #requestId = 0;
+  #changesShown = false;
 
   /**
    * @param {import('../models/ScheduleModel.js').default} model
@@ -41,9 +43,10 @@ export default class ScheduleController {
       if (openDay) storage.set('view', 'day');
     });
     view.bindTheme((theme) => this.#setTheme(theme));
+    view.bindDismissChanges(() => model.clearChanges());
     view.bindOpenEvent((uid) => {
       const event = model.findEvent(uid);
-      if (event) view.showEvent(event);
+      if (event) view.showEvent(event, model.findChange(uid));
     });
   }
 
@@ -69,7 +72,15 @@ export default class ScheduleController {
     setInterval(() => this.#model.tick(), 60 * 1000);
     setInterval(() => this.refresh(), AUTO_REFRESH_MS);
     document.addEventListener('visibilitychange', () => {
-      if (document.visibilityState !== 'visible') return;
+      if (document.visibilityState !== 'visible') {
+        // Les changements affichés pendant la visite sont considérés comme vus.
+        if (this.#changesShown) {
+          this.#model.clearChanges();
+          this.#changesShown = false;
+        }
+        return;
+      }
+      if (this.#model.hasChanges) this.#changesShown = true;
       this.#model.tick();
       if (Date.now() - this.#lastFetch > STALE_MS) this.refresh();
     });
@@ -91,9 +102,27 @@ export default class ScheduleController {
     this.refresh();
   }
 
+  /** @returns {Array<Object>} cours lus dans le fichier */
   #apply(text) {
     const { name, events } = parseIcs(text);
     this.#model.setEvents(events, name);
+    return events;
+  }
+
+  /**
+   * Compare la nouvelle version à celle de la visite précédente,
+   * puis la garde comme nouvelle référence.
+   * @param {string} group
+   * @param {Array<Object>} events
+   */
+  #trackChanges(group, events) {
+    const now = new Date();
+    const baseline = this.#storage.get(`baseline:${group}`);
+    if (Array.isArray(baseline?.events)) {
+      this.#model.addChanges(diffEvents(baseline.events, events, now), baseline.savedAt);
+    }
+    this.#storage.set(`baseline:${group}`, { savedAt: Date.now(), events: makeBaseline(events, now) });
+    if (this.#model.hasChanges && document.visibilityState === 'visible') this.#changesShown = true;
   }
 
   /** Télécharge la dernière version du planning du groupe choisi. */
@@ -110,7 +139,7 @@ export default class ScheduleController {
         this.#ics.fetchPublishedAt(group),
       ]);
       if (id !== this.#requestId) return;
-      this.#apply(text);
+      this.#trackChanges(group, this.#apply(text));
       this.#model.setStatus({ state: 'ok', fetchedAt, publishedAt: publishedAt ?? this.#model.status.publishedAt });
     } catch (error) {
       if (id !== this.#requestId) return;

@@ -7,6 +7,7 @@ import {
   formatFull,
   formatDuration,
   formatRelative,
+  formatDateShort,
   minutesOfDay,
   dayKey,
 } from '../utils/dates.js';
@@ -88,6 +89,47 @@ function shortTime(date) {
   return `${Number(h)}h${m === '00' ? '' : m}`;
 }
 
+/** Libellés des changements depuis la dernière visite. */
+const CHANGE_LABELS = {
+  cancelled: 'Annulé',
+  moved: 'Déplacé',
+  room: 'Salle changée',
+  added: 'Ajouté',
+  removed: 'Supprimé',
+};
+
+/** Nombre de changements visibles avant « Voir les autres ». */
+const VISIBLE_CHANGES = 4;
+
+/** Badge court affiché sur le cours lui-même (les annulations ont déjà le leur). */
+const CHANGE_BADGES = { moved: 'Déplacé', room: 'Salle', added: 'Nouveau' };
+
+/** @param {number} ms @returns {string} « ven. 27 nov., 14:00 » */
+function when(ms) {
+  const date = new Date(ms);
+  return `${formatDateShort(date)}, ${formatTime(date)}`;
+}
+
+/** @param {Object} c changement @returns {string} */
+function changeDetail(c) {
+  if (c.kind === 'moved' && c.before) {
+    const sameDay = dayKey(new Date(c.before.start)) === dayKey(new Date(c.start));
+    return sameDay
+      ? `${formatDateShort(new Date(c.start))}, ${formatTime(new Date(c.before.start))} → ${formatTime(new Date(c.start))}`
+      : `${when(c.before.start)} → ${when(c.start)}`;
+  }
+  if (c.kind === 'room' && c.before) {
+    return `${when(c.start)} · salle ${c.before.room || '?'} → ${c.room || '?'}`;
+  }
+  return [when(c.start), c.room ? `salle ${c.room}` : ''].filter(Boolean).join(' · ');
+}
+
+/** @param {Object|undefined} change @returns {HTMLElement|null} */
+function changeBadge(change) {
+  const label = change && CHANGE_BADGES[change.kind];
+  return label ? el('span', { class: 'badge badge-change' }, [label]) : null;
+}
+
 const cancelledBadge = () => el('span', { class: 'badge badge-cancelled' }, ['Annulé']);
 const evalBadge = () => el('span', { class: 'badge' }, ['Éval']);
 const plural = (n, word) => `${n} ${word}${n > 1 ? 's' : ''}`;
@@ -111,6 +153,7 @@ export default class ScheduleView {
     this.groupSelect = root.querySelector('[data-group]');
     this.status = root.querySelector('[data-status]');
     this.nowCard = root.querySelector('[data-now]');
+    this.changesBox = root.querySelector('[data-changes]');
     this.period = root.querySelector('[data-period]');
     this.calName = root.querySelector('[data-calname]');
     this.refreshButton = root.querySelector('[data-refresh]');
@@ -161,6 +204,7 @@ export default class ScheduleView {
     this.#renderStatus(s);
     this.#renderPeriod(s);
     this.#renderSwitch(s.view);
+    this.#renderChanges(s);
     this.#renderNow(s);
     this.#renderStrip(s);
 
@@ -227,6 +271,49 @@ export default class ScheduleView {
     this.nowCard.replaceChildren(...items);
   }
 
+  /** Bandeau des changements depuis la dernière visite. */
+  #renderChanges(s) {
+    const count = s.changes.length;
+    this.changesBox.hidden = count === 0;
+    if (count === 0) {
+      this.changesBox.replaceChildren();
+      return;
+    }
+    const since = s.changesSince ? new Date(s.changesSince) : null;
+    const sinceText = since
+      ? `Dernière visite : ${dayKey(since) === dayKey(s.now) ? 'aujourd’hui' : formatDateShort(since)} à ${formatTime(since)}`
+      : '';
+    const rows = s.changes.map((c) => {
+      const content = [
+        el('span', { class: `change-kind change-${c.kind}` }, [CHANGE_LABELS[c.kind]]),
+        el('span', { class: 'change-text' }, [
+          el('strong', {}, [c.title]),
+          ' ',
+          el('span', { class: 'change-detail' }, [changeDetail(c)]),
+        ]),
+      ];
+      return el('li', {}, [c.kind === 'removed'
+        ? el('div', { class: 'change-row' }, content)
+        : el('button', { type: 'button', class: 'change-row', 'data-uid': c.uid }, content)]);
+    });
+    this.changesBox.replaceChildren(
+      el('div', { class: 'changes-head' }, [
+        el('div', {}, [
+          el('h2', { class: 'changes-title' }, [`${count} changement${count > 1 ? 's' : ''} depuis ta dernière visite`]),
+          sinceText ? el('p', { class: 'changes-since' }, [sinceText]) : null,
+        ]),
+        el('button', { type: 'button', class: 'text-btn', 'data-dismiss-changes': '' }, ['Masquer']),
+      ]),
+      el('ul', { class: 'changes-list' }, rows.slice(0, VISIBLE_CHANGES)),
+      rows.length > VISIBLE_CHANGES
+        ? el('details', { class: 'changes-more' }, [
+          el('summary', {}, [`Voir ${rows.length - VISIBLE_CHANGES === 1 ? 'l’autre changement' : `les ${rows.length - VISIBLE_CHANGES} autres changements`}`]),
+          el('ul', { class: 'changes-list' }, rows.slice(VISIBLE_CHANGES)),
+        ])
+        : null,
+    );
+  }
+
   #nowItem(label, e, when) {
     return tint(el('button', { type: 'button', class: 'now-item', 'data-uid': e.uid }, [
       el('span', { class: 'now-label' }, [label]),
@@ -269,12 +356,14 @@ export default class ScheduleView {
       return;
     }
     const list = el('ol', { class: 'day-list', 'aria-label': `Cours du ${formatDayLong(day.key)}` });
-    for (const e of [...day.allDay, ...day.timed]) list.append(el('li', {}, [this.#dayCard(e, s.now)]));
+    for (const e of [...day.allDay, ...day.timed]) {
+      list.append(el('li', {}, [this.#dayCard(e, s.now, s.changeByUid.get(e.uid))]));
+    }
     this.#calendar.replaceChildren(el('div', { class: 'dayview' }, [this.#grid(s), list]));
     this.#scrollToNow(s);
   }
 
-  #dayCard(e, now) {
+  #dayCard(e, now, change) {
     const isCurrent = !e.allDay && !e.isCancelled && e.start <= now && e.end > now;
     const classes = ['day-card'];
     if (e.isCancelled) classes.push('is-cancelled');
@@ -295,7 +384,14 @@ export default class ScheduleView {
           e.isCancelled ? cancelledBadge() : null,
           e.isEval ? evalBadge() : null,
           isCurrent ? el('span', { class: 'badge badge-current' }, ['En cours']) : null,
+          changeBadge(change),
         ]),
+        change?.kind === 'moved' && change.before
+          ? el('span', { class: 'day-card-meta day-card-before' }, [`Avant : ${when(change.before.start)}`])
+          : null,
+        change?.kind === 'room' && change.before
+          ? el('span', { class: 'day-card-meta day-card-before' }, [`Avant : salle ${change.before.room}`])
+          : null,
         e.label || (e.title && e.code) ? el('span', { class: 'day-card-label' }, [e.label || e.title]) : null,
         el('span', { class: 'day-card-meta' }, [meta]),
         e.groups.length ? el('span', { class: 'day-card-meta' }, [e.groups.join(', ')]) : null,
@@ -342,7 +438,7 @@ export default class ScheduleView {
       });
       const list = el('ol', { class: 'events' });
       for (const { event, column: col, columns } of layoutOverlaps(day.timed)) {
-        list.append(this.#eventItem(event, col, columns, start, total));
+        list.append(this.#eventItem(event, col, columns, start, total, s.changeByUid.get(event.uid)));
       }
       column.append(list);
       if (day.timed.length === 0 && day.allDay.length === 0) {
@@ -358,21 +454,23 @@ export default class ScheduleView {
     return grid;
   }
 
-  #eventItem(e, column, columns, start, total) {
+  #eventItem(e, column, columns, start, total, change) {
     const top = ((minutesOfDay(e.start) - start) / total) * 100;
     const height = ((minutesOfDay(e.end) - minutesOfDay(e.start)) / total) * 100;
     const classes = ['event'];
     if (e.isCancelled) classes.push('is-cancelled');
     if (e.isEval) classes.push('is-eval');
     if (durationOf(e) <= 60) classes.push('is-short');
+    if (change) classes.push('is-changed');
 
-    const button = tint(el('button', { type: 'button', class: classes.join(' '), 'data-uid': e.uid, 'aria-label': accessibleLabel(e) }, [
+    const button = tint(el('button', { type: 'button', class: classes.join(' '), 'data-uid': e.uid, 'aria-label': [change ? CHANGE_LABELS[change.kind] : '', accessibleLabel(e)].filter(Boolean).join(', ') }, [
       el('span', { class: 'event-time', 'aria-hidden': 'true' }, [`${formatTime(e.start)}–${formatTime(e.end)}`]),
       el('span', { class: 'event-title', 'aria-hidden': 'true' }, [
         el('span', { class: 'event-code' }, breakable(shortTitle(e))),
         e.type ? el('span', { class: 'event-type' }, [typeLabel(e)]) : null,
         e.isCancelled ? cancelledBadge() : null,
         e.isEval ? evalBadge() : null,
+        changeBadge(change),
       ]),
       e.room ? el('span', { class: 'event-room', 'aria-hidden': 'true' }, [e.room]) : null,
       e.teacher ? el('span', { class: 'event-teacher', 'aria-hidden': 'true' }, [e.teacher]) : null,
@@ -439,8 +537,9 @@ export default class ScheduleView {
   /**
    * Ouvre la fiche détaillée d'un cours.
    * @param {Object} e
+   * @param {Object|undefined} change changement récent concernant ce cours
    */
-  showEvent(e) {
+  showEvent(e, change) {
     const title = [shortTitle(e), typeLabel(e)].filter(Boolean).join(' · ');
     const heading = this.#dialog.querySelector('[data-dialog-title]');
     heading.replaceChildren(title, e.isCancelled ? cancelledBadge() : '');
@@ -456,6 +555,7 @@ export default class ScheduleView {
       ['Enseignant', e.teacher],
       ['Groupes', e.groups.join(', ')],
       ['Évaluation', e.isEval ? 'Oui' : ''],
+      ['Changement', change ? `${CHANGE_LABELS[change.kind]} (${changeDetail(change)})` : ''],
     ].filter(([, value]) => value);
     if (rows.length === 0) rows.push(['Détail', e.summary]);
 
@@ -476,6 +576,13 @@ export default class ScheduleView {
     this.#root.addEventListener('click', (event) => {
       const button = event.target.closest('[data-theme-choice]');
       if (button) handler(button.dataset.themeChoice);
+    });
+  }
+
+  /** @param {() => void} handler */
+  bindDismissChanges(handler) {
+    this.#root.addEventListener('click', (event) => {
+      if (event.target.closest('[data-dismiss-changes]')) handler();
     });
   }
 

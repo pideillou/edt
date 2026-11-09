@@ -20,7 +20,7 @@ export const GROUPS = [
 export const VIEWS = ['day', 'week', 'month'];
 
 const DEFAULT_START = 8 * 60;
-const DEFAULT_END = 18 * 60;
+const DEFAULT_END = 19 * 60;
 
 /**
  * État de l'emploi du temps et règles d'affichage.
@@ -34,6 +34,8 @@ export default class ScheduleModel extends EventTarget {
   #cursor;
   #now = new Date();
   #status = { state: 'idle', fetchedAt: null, publishedAt: null, message: '' };
+  #changes = [];
+  #changesSince = null;
 
   constructor() {
     super();
@@ -55,7 +57,45 @@ export default class ScheduleModel extends EventTarget {
     this.#group = GROUPS.some((g) => g.id === group) ? group : '';
     this.#events = [];
     this.#calendarName = '';
+    this.#changes = [];
+    this.#changesSince = null;
     this.#emit();
+  }
+
+  /**
+   * Ajoute des changements détectés. Un même cours n'apparaît qu'une fois :
+   * le changement le plus récent remplace le précédent.
+   * @param {Array<Object>} changes résultat de diffEvents
+   * @param {number|null} since date de la version de référence
+   */
+  addChanges(changes, since) {
+    if (changes.length === 0) return;
+    const byUid = new Map(this.#changes.map((c) => [c.uid, c]));
+    for (const change of changes) {
+      const previous = byUid.get(change.uid);
+      byUid.set(change.uid, previous?.before ? { ...change, before: previous.before } : change);
+    }
+    this.#changes = [...byUid.values()].sort((a, b) => a.start - b.start);
+    this.#changesSince ??= since;
+    this.#emit();
+  }
+
+  /** Les changements ont été vus : on les retire. */
+  clearChanges() {
+    if (this.#changes.length === 0) return;
+    this.#changes = [];
+    this.#changesSince = null;
+    this.#emit();
+  }
+
+  /** @param {string} uid @returns {Object|undefined} */
+  findChange(uid) {
+    return this.#changes.find((c) => c.uid === uid);
+  }
+
+  /** @returns {boolean} */
+  get hasChanges() {
+    return this.#changes.length > 0;
   }
 
   /** @returns {string} */
@@ -196,6 +236,9 @@ export default class ScheduleModel extends EventTarget {
       next: upcoming.find((e) => e.start > this.#now) ?? null,
       status: this.#status,
       hasData: this.#events.length > 0,
+      changes: this.#changes,
+      changesSince: this.#changesSince,
+      changeByUid: new Map(this.#changes.map((c) => [c.uid, c])),
     };
 
     if (this.#view === 'month') {

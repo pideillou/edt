@@ -174,3 +174,8 @@ const monthFormat = new Intl.DateTimeFormat('fr-FR', { timeZone: 'UTC', month: '
 
 /** @param {string} key @returns {string} « novembre 2026 » */
 export const formatMonth = (key) => monthFormat.format(keyToUtc(key));
+
+const dateShort = new Intl.DateTimeFormat('fr-FR', { timeZone: TIME_ZONE, weekday: 'short', day: 'numeric', month: 'short' });
+
+/** @param {Date} date @returns {string} « ven. 27 nov. » */
+export const formatDateShort = (date) => dateShort.format(date);

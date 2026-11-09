@@ -11,6 +11,8 @@ Le code est en HTML, CSS et JavaScript natif (modules ES, organisation MVC). Il 
 - En vue mois, chaque case montre jusqu'à trois cours (des points de couleur sur mobile). Un clic sur un jour ouvre la vue jour.
 - Deux thèmes, Ardoise (clair) et Ardoise nuit (sombre), plus un mode automatique qui suit le réglage de l'appareil.
 - Carte « En cours / Prochain cours » en haut de l'écran.
+- Changements depuis ta dernière visite : l'app compare le planning à la version vue la fois précédente et signale les cours annulés, déplacés, changés de salle, ajoutés ou supprimés. Le bandeau disparaît tout seul quand tu quittes l'app après l'avoir vu.
+- Salles libres : à partir des plannings MMI1, MMI2 et MMI3, la liste des salles libres maintenant ou à un autre moment, avec l'heure jusqu'à laquelle elles le restent. Seuls les cours MMI sont connus : une salle partagée avec un autre département peut être occupée sans que l'app le sache.
 - Une couleur par matière. Les cours annulés sont en rouge, hachurés et barrés, avec un badge « Annulé ».
 - Fiche détaillée au clic : salle, enseignant, durée, groupes, intitulé de la SAÉ.
 - Navigation avec les flèches, un glissement horizontal sur mobile, les touches ← et → et la touche T pour revenir à aujourd'hui.
@@ -71,11 +73,16 @@ js/main.js                  point d'entrée
 js/models/ScheduleModel.js  état, navigation, jours visibles, prochain cours
 js/views/ScheduleView.js    rendu du calendrier et de la fiche
 js/controllers/ScheduleController.js
+js/models/RoomsModel.js     salles libres : état et calcul
+js/views/RoomsView.js       salles libres : fenêtre
+js/controllers/RoomsController.js
 js/services/IcsService.js   téléchargement et cache du .ics
 js/services/StorageService.js
 js/utils/icsParser.js       lecture du format iCalendar et du titre des cours
 js/utils/dates.js           calculs en heure de Paris
 js/utils/layout.js          cours qui se chevauchent, couleurs des matières
+js/utils/changes.js         comparaison entre deux versions du planning
+js/utils/rooms.js           occupation des salles à un instant donné
 sw.js                       cache hors ligne de l'interface
 manifest.webmanifest        installation PWA
 ```

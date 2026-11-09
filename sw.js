@@ -1,7 +1,7 @@
 /* Service worker : met l'interface en cache pour un usage hors ligne.
  * Le planning lui-même est gardé dans le localStorage par l'application.
  * Changer VERSION à chaque mise en ligne d'une nouvelle version du code. */
-const VERSION = 'edt-v2';
+const VERSION = 'edt-v4';
 const SHELL = [
   './',
   './index.html',
@@ -11,6 +11,11 @@ const SHELL = [
   './js/models/ScheduleModel.js',
   './js/views/ScheduleView.js',
   './js/controllers/ScheduleController.js',
+  './js/models/RoomsModel.js',
+  './js/views/RoomsView.js',
+  './js/controllers/RoomsController.js',
+  './js/utils/changes.js',
+  './js/utils/rooms.js',
   './js/services/IcsService.js',
   './js/services/StorageService.js',
   './js/utils/dates.js',

@@ -53,8 +53,14 @@
           <option value="">Choisir un groupe</option>
         </select>
       </div>
+      <button type="button" class="text-btn rooms-btn" data-rooms-open aria-haspopup="dialog">
+        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><path d="M4 21h16M6 21V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v17M14 12h.01" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span>Salles libres</span>
+      </button>
       <p class="status" data-status role="status" aria-live="polite"></p>
     </div>
+
+    <section class="changes" data-changes aria-label="Changements depuis ta dernière visite" hidden></section>
 
     <section class="now" data-now aria-label="Cours en cours et prochain cours" hidden></section>
 
@@ -90,6 +96,32 @@
     </div>
     <p class="dialog-sub" data-dialog-sub></p>
     <dl class="dialog-list" data-dialog-list></dl>
+  </dialog>
+
+  <dialog class="dialog rooms-dialog" data-rooms-dialog aria-labelledby="rooms-title">
+    <div class="dialog-head">
+      <h2 id="rooms-title" class="dialog-title">Salles libres</h2>
+      <button type="button" class="icon-btn" data-rooms-close aria-label="Fermer">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+    <div class="rooms-when">
+      <button type="button" class="text-btn rooms-now" data-rooms-now aria-pressed="true">Maintenant</button>
+      <label class="rooms-field">
+        <span class="visually-hidden">Jour</span>
+        <input type="date" class="input" data-rooms-date>
+      </label>
+      <label class="rooms-field">
+        <span class="visually-hidden">Heure</span>
+        <input type="time" class="input" data-rooms-time step="300">
+      </label>
+    </div>
+    <p class="rooms-status" data-rooms-status role="status" aria-live="polite"></p>
+    <h3 class="rooms-heading" data-rooms-free-title>Libres</h3>
+    <ul class="rooms-list" data-rooms-free></ul>
+    <h3 class="rooms-heading" data-rooms-busy-title>Occupées</h3>
+    <ul class="rooms-list" data-rooms-busy></ul>
+    <p class="rooms-note">Basé sur les plannings MMI uniquement : une salle partagée avec un autre département peut être occupée sans que l’app le sache.</p>
   </dialog>
 
   <noscript><p class="noscript">Cette application a besoin de JavaScript pour afficher l’emploi du temps.</p></noscript>
