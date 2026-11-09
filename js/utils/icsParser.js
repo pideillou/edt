@@ -46,13 +46,14 @@ export function parseSummary(summary, description) {
   let rest = summary.trim();
   let isEval = false;
   let isCancelled = false;
-  let tag = rest.match(/^\[([^\]]+)\]\s*/);
-  while (tag) {
-    if (/^EVAL/i.test(tag[1])) isEval = true;
-    if (/^ANNUL/i.test(tag[1])) isCancelled = true;
-    rest = rest.slice(tag[0].length);
-    tag = rest.match(/^\[([^\]]+)\]\s*/);
-  }
+
+  // Balises « [ANNULE] » et « [EVAL] », au début ou au milieu du titre (ex. « R3.01 TP [ANNULE] ADAMCZYK »).
+  rest = rest.replace(/\s*\[([^\]]+)\]\s*/g, (match, inner) => {
+    if (/^ANNUL/i.test(inner)) isCancelled = true;
+    else if (/^EVAL/i.test(inner)) isEval = true;
+    else return match;
+    return ' ';
+  }).trim();
 
   let groups = [];
   const g = rest.match(GROUP_PATTERN);

@@ -1,7 +1,7 @@
 /* Service worker : met l'interface en cache pour un usage hors ligne.
  * Le planning lui-même est gardé dans le localStorage par l'application.
  * Changer VERSION à chaque mise en ligne d'une nouvelle version du code. */
-const VERSION = 'edt-v1';
+const VERSION = 'edt-v2';
 const SHELL = [
   './',
   './index.html',

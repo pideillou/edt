@@ -1,40 +1,93 @@
-/* EDT MMI : feuille de style unique, mobile d'abord. */
+/* EDT MMI : feuille de style unique, mobile d'abord.
+   Thème clair « Ardoise », thème sombre « Ardoise nuit ».
+   Le rouge est réservé aux cours annulés. */
 
 :root {
-  color-scheme: light dark;
-  --bg: #f6f5f1;
+  color-scheme: light;
+  --bg: #eef2f7;
   --surface: #ffffff;
-  --surface-2: #efede7;
-  --line: #dcd9d0;
-  --line-soft: #ebe8e1;
-  --text: #1d1f24;
-  --muted: #5d6068;
-  --accent: #c2410c;
+  --surface-2: #e6ebf2;
+  --line: #d5dce6;
+  --line-soft: #e3e8ef;
+  --text: #0f172a;
+  --muted: #526077;
+  --accent: #2563eb;
+  --accent-soft: #dbeafe;
+  --accent-text: #1e40af;
+  --on-accent: #ffffff;
   --focus: #1d4ed8;
+  --today-tint: rgba(37, 99, 235, 0.05);
+  --x-bg: #fdecec;
+  --x-line: #dc2626;
+  --x-text: #991b1b;
+  --x-badge: #dc2626;
+  --x-on-badge: #ffffff;
+  --x-hatch: rgba(220, 38, 38, 0.12);
   --ev-bg-l: 93%;
   --ev-bd-l: 38%;
   --ev-tx-l: 16%;
   --ev-sat: 65%;
+  --shadow: 0 1.25rem 3rem rgba(15, 23, 42, 0.2);
   --hour-h: 3.75rem;
   --radius: 0.625rem;
   --font: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 }
 
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #0f172a;
+  --surface: #172033;
+  --surface-2: #1d2940;
+  --line: #2a3550;
+  --line-soft: #222d45;
+  --text: #e2e8f0;
+  --muted: #94a3b8;
+  --accent: #60a5fa;
+  --accent-soft: #1e3a5f;
+  --accent-text: #bfdbfe;
+  --on-accent: #0f172a;
+  --focus: #93c5fd;
+  --today-tint: rgba(96, 165, 250, 0.06);
+  --x-bg: #3b1517;
+  --x-line: #f87171;
+  --x-text: #fecaca;
+  --x-badge: #f87171;
+  --x-on-badge: #3b1517;
+  --x-hatch: rgba(248, 113, 113, 0.14);
+  --ev-bg-l: 24%;
+  --ev-bd-l: 62%;
+  --ev-tx-l: 93%;
+  --ev-sat: 40%;
+  --shadow: 0 1.25rem 3rem rgba(0, 0, 0, 0.5);
+}
+
 @media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #16181d;
-    --surface: #1e2027;
-    --surface-2: #262932;
-    --line: #353946;
-    --line-soft: #2a2d36;
-    --text: #eceef3;
-    --muted: #a3a8b5;
-    --accent: #fb923c;
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #0f172a;
+    --surface: #172033;
+    --surface-2: #1d2940;
+    --line: #2a3550;
+    --line-soft: #222d45;
+    --text: #e2e8f0;
+    --muted: #94a3b8;
+    --accent: #60a5fa;
+    --accent-soft: #1e3a5f;
+    --accent-text: #bfdbfe;
+    --on-accent: #0f172a;
     --focus: #93c5fd;
+    --today-tint: rgba(96, 165, 250, 0.06);
+    --x-bg: #3b1517;
+    --x-line: #f87171;
+    --x-text: #fecaca;
+    --x-badge: #f87171;
+    --x-on-badge: #3b1517;
+    --x-hatch: rgba(248, 113, 113, 0.14);
     --ev-bg-l: 24%;
     --ev-bd-l: 62%;
     --ev-tx-l: 93%;
     --ev-sat: 40%;
+    --shadow: 0 1.25rem 3rem rgba(0, 0, 0, 0.5);
   }
 }
 
@@ -73,6 +126,10 @@ button {
   outline-offset: 2px;
 }
 
+[hidden] {
+  display: none !important;
+}
+
 .visually-hidden {
   position: absolute;
   width: 1px;
@@ -102,10 +159,10 @@ button {
 
 .brand {
   margin: 0;
-  white-space: nowrap;
   font-size: 1.375rem;
   font-weight: 800;
   letter-spacing: -0.02em;
+  white-space: nowrap;
 }
 
 .brand-group {
@@ -117,17 +174,35 @@ button {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  min-width: 0;
 }
 
-.select {
-  min-width: 0;
-  max-width: 10rem;
-  min-height: 2.75rem;
-  padding: 0 0.75rem;
+.theme-switch {
+  display: inline-flex;
+  padding: 0.1875rem;
   border: 1px solid var(--line);
   border-radius: var(--radius);
   background: var(--surface);
+}
+
+.theme-switch button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border: 0;
+  border-radius: 0.4375rem;
+  background: transparent;
+  color: var(--muted);
+}
+
+.theme-switch button:hover {
+  color: var(--text);
+}
+
+.theme-switch button[aria-pressed="true"] {
+  background: var(--accent-soft);
+  color: var(--accent-text);
 }
 
 .icon-btn,
@@ -167,15 +242,78 @@ button {
   }
 }
 
+/* Choix du groupe */
+
+.group-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 0.375rem 0.625rem;
+  margin: 0.75rem 0;
+}
+
+.group-label {
+  color: var(--muted);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.select-wrap {
+  position: relative;
+  max-width: 16rem;
+}
+
+.select-wrap::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: 0.875rem;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-right: 2px solid var(--muted);
+  border-bottom: 2px solid var(--muted);
+  transform: translateY(-70%) rotate(45deg);
+  pointer-events: none;
+}
+
+.select {
+  width: 100%;
+  min-height: 2.75rem;
+  padding: 0 2.5rem 0 0.875rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  font-weight: 600;
+  appearance: none;
+  cursor: pointer;
+}
+
+.select:hover {
+  border-color: var(--muted);
+}
+
+.select:focus-visible {
+  border-color: var(--accent);
+  outline: 2px solid var(--focus);
+  outline-offset: 1px;
+}
+
+.select option,
+.select optgroup {
+  background: var(--surface);
+  color: var(--text);
+}
+
 .status {
+  grid-column: 1 / -1;
   min-height: 1.25rem;
-  margin: 0.375rem 0 0.75rem;
+  margin: 0;
   color: var(--muted);
   font-size: 0.8125rem;
 }
 
 .status[data-state="error"] {
-  color: var(--accent);
+  color: var(--x-text);
   font-weight: 600;
 }
 
@@ -194,7 +332,7 @@ button {
   padding: 0.75rem 0.875rem;
   border: 0;
   border-left: 0.3125rem solid hsl(var(--h), var(--ev-sat), var(--ev-bd-l));
-  border-radius: var(--radius);
+  border-radius: 0 var(--radius) var(--radius) 0;
   background: hsl(var(--h), var(--ev-sat), var(--ev-bg-l));
   color: hsl(var(--h), 40%, var(--ev-tx-l));
   text-align: left;
@@ -246,6 +384,7 @@ button {
 
 .switch {
   display: inline-flex;
+  flex: 1 1 12rem;
   padding: 0.1875rem;
   border: 1px solid var(--line);
   border-radius: var(--radius);
@@ -253,8 +392,9 @@ button {
 }
 
 .switch button {
+  flex: 1 1 0;
   min-height: 2.375rem;
-  padding: 0 0.625rem;
+  padding: 0 0.5rem;
   border: 0;
   border-radius: 0.4375rem;
   background: transparent;
@@ -262,8 +402,75 @@ button {
 }
 
 .switch button[aria-pressed="true"] {
-  background: var(--text);
-  color: var(--bg);
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+/* Bande des jours (vue jour) */
+
+.strip {
+  display: grid;
+  grid-auto-columns: minmax(0, 1fr);
+  grid-auto-flow: column;
+  gap: 0.375rem;
+  margin: 0 0 0.75rem;
+  padding: 0;
+  list-style: none;
+}
+
+.strip-day {
+  display: grid;
+  justify-items: center;
+  gap: 0.0625rem;
+  width: 100%;
+  padding: 0.375rem 0.25rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  line-height: 1.2;
+}
+
+.strip-day:hover {
+  border-color: var(--accent);
+}
+
+.strip-name {
+  color: var(--muted);
+  font-size: 0.75rem;
+  text-transform: capitalize;
+}
+
+.strip-num {
+  font-size: 1.125rem;
+  font-weight: 700;
+}
+
+.strip-day.is-today .strip-num {
+  color: var(--accent);
+}
+
+.strip-info {
+  display: none;
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+
+.strip-cancelled {
+  color: var(--x-text);
+  font-weight: 600;
+}
+
+.strip-day[aria-current="date"] {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+.strip-day[aria-current="date"] .strip-name,
+.strip-day[aria-current="date"] .strip-num,
+.strip-day[aria-current="date"] .strip-info,
+.strip-day[aria-current="date"] .strip-cancelled {
+  color: var(--on-accent);
 }
 
 /* Grille du calendrier */
@@ -275,11 +482,39 @@ button {
   overflow: hidden;
 }
 
+.calendar[data-mode="day"] {
+  border: 0;
+  background: transparent;
+  overflow: visible;
+}
+
+.calendar[data-mode="day"] > .empty {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
 .empty {
   margin: 0;
   padding: 2.5rem 1.25rem;
   color: var(--muted);
   text-align: center;
+}
+
+.dayview {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.dayview > .grid {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  overflow: hidden;
+}
+
+.day-list {
+  display: none;
 }
 
 .grid {
@@ -316,6 +551,11 @@ button {
 
 .day-head::first-letter {
   text-transform: uppercase;
+}
+
+.grid-day .day-head,
+.grid-day .corner {
+  display: none;
 }
 
 .day-head.is-today {
@@ -377,7 +617,7 @@ button {
 }
 
 .day.is-today {
-  background-color: hsla(25, 90%, 50%, 0.05);
+  background-color: var(--today-tint);
 }
 
 .day.is-weekend {
@@ -410,7 +650,7 @@ button {
   padding: 0.25rem 0.375rem;
   border: 2px solid var(--surface);
   border-left: 0.25rem solid hsl(var(--h), var(--ev-sat), var(--ev-bd-l));
-  border-radius: 0.5rem;
+  border-radius: 0 0.5rem 0.5rem 0;
   background: hsl(var(--h), var(--ev-sat), var(--ev-bg-l));
   background-clip: padding-box;
   color: hsl(var(--h), 40%, var(--ev-tx-l));
@@ -430,7 +670,6 @@ button {
 
 .event-time {
   font-variant-numeric: tabular-nums;
-  opacity: 0.85;
 }
 
 .event-title {
@@ -448,7 +687,6 @@ button {
 }
 
 .event-teacher {
-  opacity: 0.85;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -458,11 +696,21 @@ button {
   display: none;
 }
 
-.event.is-cancelled {
-  opacity: 0.55;
+/* Cours annulés : rouge, hachures, code barré */
+
+.event.is-cancelled,
+.day-card.is-cancelled,
+.month-chip.is-cancelled,
+.chip.is-cancelled {
+  border-left-color: var(--x-line);
+  background-color: var(--x-bg);
+  background-image: repeating-linear-gradient(135deg, transparent 0, transparent 0.375rem, var(--x-hatch) 0.375rem, var(--x-hatch) 0.5rem);
+  color: var(--x-text);
 }
 
-.event.is-cancelled .event-title {
+.event.is-cancelled .event-code,
+.day-card.is-cancelled .day-card-code,
+.month-chip.is-cancelled {
   text-decoration: line-through;
 }
 
@@ -472,18 +720,24 @@ button {
   padding: 0 0.3125rem;
   border-radius: 0.25rem;
   background: var(--accent);
-  color: #ffffff;
+  color: var(--on-accent);
   font-size: 0.625rem;
   font-weight: 700;
   letter-spacing: 0.04em;
+  line-height: 1.5;
+  text-decoration: none;
   text-transform: uppercase;
   vertical-align: 0.0625rem;
 }
 
-@media (prefers-color-scheme: dark) {
-  .badge {
-    color: #16181d;
-  }
+.badge-cancelled {
+  background: var(--x-badge);
+  color: var(--x-on-badge);
+}
+
+.badge-current {
+  background: var(--accent-soft);
+  color: var(--accent-text);
 }
 
 .now-line {
@@ -508,7 +762,190 @@ button {
   background: var(--accent);
 }
 
-/* Vue semaine sur petit écran : on reste lisible en réduisant le détail */
+/* Liste détaillée de la vue jour (grand écran) */
+
+.day-list {
+  gap: 0.5rem;
+  align-content: start;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.day-card {
+  display: grid;
+  grid-template-columns: 3.5rem minmax(0, 1fr);
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.75rem 0.875rem;
+  border: 1px solid var(--line);
+  border-left: 0.25rem solid hsl(var(--h), var(--ev-sat), var(--ev-bd-l));
+  border-radius: 0 var(--radius) var(--radius) 0;
+  background: var(--surface);
+  text-align: left;
+}
+
+.day-card:hover {
+  border-color: var(--accent);
+  border-left-color: hsl(var(--h), var(--ev-sat), var(--ev-bd-l));
+}
+
+.day-card.is-current {
+  border-color: var(--accent);
+  border-left-color: hsl(var(--h), var(--ev-sat), var(--ev-bd-l));
+  box-shadow: 0 0 0 1px var(--accent);
+}
+
+.day-card-time {
+  display: grid;
+  align-content: start;
+  color: var(--muted);
+  font-size: 0.875rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.day-card-time strong {
+  color: var(--text);
+  font-size: 1rem;
+}
+
+.day-card.is-cancelled .day-card-time,
+.day-card.is-cancelled .day-card-time strong {
+  color: var(--x-text);
+}
+
+.day-card-body {
+  display: grid;
+  gap: 0.125rem;
+  min-width: 0;
+}
+
+.day-card-title {
+  font-weight: 700;
+}
+
+.day-card-label {
+  font-size: 0.875rem;
+}
+
+.day-card-meta {
+  color: var(--muted);
+  font-size: 0.8125rem;
+}
+
+.day-card.is-cancelled .day-card-meta {
+  color: var(--x-text);
+}
+
+/* Vue mois */
+
+.month {
+  display: grid;
+}
+
+.month-head,
+.month-week {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr)) repeat(2, minmax(0, 0.5fr));
+}
+
+.month-head span {
+  padding: 0.5rem 0.25rem;
+  border-bottom: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+.month-day {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.1875rem;
+  min-width: 0;
+  min-height: 4rem;
+  padding: 0.3125rem;
+  border: 0;
+  border-right: 1px solid var(--line-soft);
+  border-bottom: 1px solid var(--line-soft);
+  background: var(--surface);
+  text-align: left;
+}
+
+.month-day:hover {
+  background: var(--surface-2);
+}
+
+.month-day.is-weekend {
+  background: var(--surface-2);
+}
+
+.month-day.is-outside {
+  color: var(--muted);
+}
+
+.month-day.is-outside .month-events,
+.month-day.is-outside .month-dots {
+  opacity: 0.5;
+}
+
+.month-num {
+  align-self: flex-start;
+  min-width: 1.5rem;
+  padding: 0 0.25rem;
+  border-radius: 0.75rem;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.month-day.is-today .month-num {
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+.month-events,
+.month-more {
+  display: none;
+}
+
+.month-dots {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.1875rem;
+}
+
+.dot {
+  width: 0.4375rem;
+  height: 0.4375rem;
+  border-radius: 50%;
+  background: hsl(var(--h), var(--ev-sat), var(--ev-bd-l));
+}
+
+.dot.is-cancelled {
+  background: var(--x-line);
+}
+
+.month-chip {
+  display: block;
+  padding: 0.0625rem 0.3125rem;
+  border-left: 0.1875rem solid hsl(var(--h), var(--ev-sat), var(--ev-bd-l));
+  background: hsl(var(--h), var(--ev-sat), var(--ev-bg-l));
+  color: hsl(var(--h), 40%, var(--ev-tx-l));
+  font-size: 0.6875rem;
+  line-height: 1.4;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.month-more {
+  color: var(--muted);
+  font-size: 0.6875rem;
+}
+
+/* Vue semaine sur petit écran : on garde l'essentiel */
 
 @media (max-width: 47.99em) {
   .grid-week .event {
@@ -529,6 +966,12 @@ button {
   }
 }
 
+@media (min-width: 30em) {
+  .strip-info {
+    display: block;
+  }
+}
+
 @media (min-width: 48em) {
   :root {
     --hour-h: 4rem;
@@ -538,10 +981,26 @@ button {
     padding-top: 1.25rem;
   }
 
+  .group-row {
+    grid-template-columns: auto minmax(0, 16rem) minmax(0, 1fr);
+  }
+
+  .status {
+    grid-column: auto;
+    text-align: right;
+  }
+
   .period {
     order: 0;
     flex: 1 1 auto;
-    flex-basis: auto;
+  }
+
+  .switch {
+    flex: 0 0 auto;
+  }
+
+  .switch button {
+    padding: 0 0.75rem;
   }
 
   .now {
@@ -552,9 +1011,34 @@ button {
     grid-template-columns: 3rem repeat(var(--days), minmax(0, 1fr));
   }
 
-  .select {
-    max-width: none;
+  .month-day {
+    min-height: 6.5rem;
   }
+
+  .month-events {
+    display: grid;
+    gap: 0.125rem;
+  }
+
+  .month-more {
+    display: block;
+  }
+
+  .month-day:not(.is-weekend) .month-dots {
+    display: none;
+  }
+}
+
+@media (min-width: 64em) {
+  .dayview {
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+    align-items: start;
+  }
+
+  .day-list {
+    display: grid;
+  }
+
 }
 
 /* Fiche détaillée */
@@ -564,10 +1048,14 @@ button {
   padding: 1.25rem;
   border: 0;
   border-top: 0.375rem solid hsl(var(--h, 210), var(--ev-sat), var(--ev-bd-l));
-  border-radius: 0.875rem;
+  border-radius: 0 0 0.875rem 0.875rem;
   background: var(--surface);
   color: var(--text);
-  box-shadow: 0 1.25rem 3rem rgba(0, 0, 0, 0.25);
+  box-shadow: var(--shadow);
+}
+
+.dialog.is-cancelled {
+  border-top-color: var(--x-line);
 }
 
 .dialog::backdrop {
@@ -584,6 +1072,11 @@ button {
 .dialog-title {
   margin: 0.375rem 0 0;
   font-size: 1.25rem;
+}
+
+.dialog-title .badge {
+  font-size: 0.75rem;
+  vertical-align: 0.125rem;
 }
 
 .dialog-sub {

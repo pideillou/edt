@@ -36,14 +36,30 @@ export default class ScheduleController {
       model.setView(mode);
       storage.set('view', mode);
     });
+    view.bindShowDay((key, openDay) => {
+      model.showDay(key, openDay);
+      if (openDay) storage.set('view', 'day');
+    });
+    view.bindTheme((theme) => this.#setTheme(theme));
     view.bindOpenEvent((uid) => {
       const event = model.findEvent(uid);
       if (event) view.showEvent(event);
     });
   }
 
+  /** @param {string} theme 'auto', 'light' ou 'dark' */
+  #setTheme(theme) {
+    const value = ['auto', 'light', 'dark'].includes(theme) ? theme : 'auto';
+    this.#storage.set('theme', value);
+    this.#view.renderTheme(value);
+  }
+
   /** Démarre l'application avec les préférences enregistrées. */
   start() {
+    this.#setTheme(this.#storage.get('theme', 'auto'));
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+      this.#view.renderTheme(this.#storage.get('theme', 'auto'));
+    });
     const savedView = this.#storage.get('view');
     const wide = window.matchMedia('(min-width: 48em)').matches;
     this.#view.renderGroups(GROUPS, '');

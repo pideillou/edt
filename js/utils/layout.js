@@ -39,11 +39,12 @@ export function layoutOverlaps(events) {
 
 /**
  * Teinte stable (0 à 359) pour une matière, pour colorer ses cours.
+ * Pas de rouge, d'orange ni de jaune : le rouge est réservé aux cours annulés.
  * @param {string} text
  * @returns {number}
  */
 export function hueFor(text) {
-  const hues = [210, 150, 30, 280, 345, 185, 95, 255, 5, 120, 320, 50];
+  const hues = [210, 150, 230, 280, 185, 95, 255, 125, 300, 195, 165];
   let hash = 0;
   for (const char of text) hash = (hash * 31 + char.codePointAt(0)) >>> 0;
   return hues[hash % hues.length];

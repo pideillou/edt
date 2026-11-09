@@ -169,3 +169,8 @@ export function formatRelative(date, now) {
   else text = `${Math.round(abs / (60 * 24))} j`;
   return diff < 0 ? `il y a ${text}` : `dans ${text}`;
 }
+
+const monthFormat = new Intl.DateTimeFormat('fr-FR', { timeZone: 'UTC', month: 'long', year: 'numeric' });
+
+/** @param {string} key @returns {string} « novembre 2026 » */
+export const formatMonth = (key) => monthFormat.format(keyToUtc(key));
