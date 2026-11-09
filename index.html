@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>EDT MMI</title>
+  <meta name="description" content="Emploi du temps MMI, synchronisé avec les fichiers ICS publiés.">
+  <meta name="theme-color" content="#f6f5f1" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#16181d" media="(prefers-color-scheme: dark)">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="EDT">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="stylesheet" href="css/style.css">
+  <script type="module" src="js/main.js"></script>
+</head>
+<body>
+  <div class="app" data-app>
+    <header class="topbar">
+      <h1 class="brand">EDT <span class="brand-group" data-calname></span></h1>
+      <div class="topbar-actions">
+        <label class="visually-hidden" for="group">Groupe</label>
+        <select id="group" class="select" data-group>
+          <option value="">Choisir un groupe</option>
+        </select>
+        <button type="button" class="icon-btn" data-refresh aria-label="Actualiser le planning" title="Actualiser">
+          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="M20 12a8 8 0 1 1-2.34-5.66M20 4v5h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <p class="status" data-status role="status" aria-live="polite"></p>
+
+    <section class="now" data-now aria-label="Cours en cours et prochain cours" hidden></section>
+
+    <nav class="toolbar" aria-label="Navigation dans le calendrier">
+      <div class="toolbar-nav">
+        <button type="button" class="icon-btn" data-nav="-1" aria-label="Période précédente">
+          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <button type="button" class="text-btn" data-today>Aujourd’hui</button>
+        <button type="button" class="icon-btn" data-nav="1" aria-label="Période suivante">
+          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+      <h2 class="period" data-period aria-live="polite">Emploi du temps</h2>
+      <div class="switch" role="group" aria-label="Affichage">
+        <button type="button" data-view="day" aria-pressed="false">Jour</button>
+        <button type="button" data-view="week" aria-pressed="true">Semaine</button>
+      </div>
+    </nav>
+
+    <main class="calendar" data-calendar></main>
+  </div>
+
+  <dialog class="dialog" data-dialog aria-labelledby="dialog-title">
+    <div class="dialog-head">
+      <h2 id="dialog-title" class="dialog-title" data-dialog-title>Cours</h2>
+      <button type="button" class="icon-btn" data-dialog-close aria-label="Fermer">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+    <p class="dialog-sub" data-dialog-sub></p>
+    <dl class="dialog-list" data-dialog-list></dl>
+  </dialog>
+
+  <noscript><p class="noscript">Cette application a besoin de JavaScript pour afficher l’emploi du temps.</p></noscript>
+</body>
+</html>
